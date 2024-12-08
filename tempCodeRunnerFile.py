@@ -13,11 +13,8 @@ class Diagram:
     def get_addable_cells(self):
         """
         Find all cells that can be added to the diagram.
-        A cell (x, y) can be added if:
-        - It has support from below (cell at (x, y - 1) or at the bottom edge y == 0)
-        - It does not create a column taller than the previous one
-          (cell at (x - 1, y) exists or it's the first column)
-        This ensures the result is a valid Young diagram.
+        A cell (x, y) can be added if the cell below it (x, y - 1) is in the diagram
+        or if it is on the bottom edge (y == 0), ensuring the result is a Young diagram.
         """
         addable_cells = set()
         for x, y in self.cells:
@@ -26,21 +23,18 @@ class Diagram:
             for nx, ny in neighbors:
                 # If the neighbor is not already in the diagram
                 if (nx, ny) not in self.cells:
-                    # Check if the cell can be added based on the conditions
-                    has_support_below = ny == 0 or (nx, ny - 1) in self.cells
-                    has_left_neighbor = nx == 0 or (nx - 1, ny) in self.cells
-                    if has_support_below and has_left_neighbor:
+                    # Check if the cell below exists or if it's on the bottom edge
+                    if ny == 0 or (nx, ny - 1) in self.cells:
                         addable_cells.add((nx, ny))
         return addable_cells
     
     def get_S(self, c, alpha=1):
         """
-        Compute S(c) to balance the growth in x and y directions.
-        Compute S(c) = (x + 1 + y + 1) raised to the power alpha.
+        Compute S(c) = (area of rectangle defined by (0,0) and c) raised to the power alpha.
         """
         x, y = c
-        total = (x + 1) + (y + 1)
-        return total ** alpha
+        area = (x + 1) * (y + 1)
+        return area ** alpha
     
     def add_cell(self, c):
         """
@@ -76,13 +70,11 @@ class Diagram:
         """
         x_coords = [x for x, y in self.cells]
         y_coords = [y for x, y in self.cells]
-        plt.figure(figsize=(8, 8))  # Increase the figure size for better visibility
-        plt.scatter(x_coords, y_coords, s=200, marker='s')  # Use square markers to represent cells
+        plt.scatter(x_coords, y_coords)
         plt.gca().set_aspect('equal', adjustable='box')
         plt.xlabel('x')
         plt.ylabel('y')
-        plt.title('Young Diagram after {} steps'.format(len(self.cells) - 1))
-        plt.grid(True)
+        plt.title('Diagram after {} steps'.format(len(self.cells) - 1))
         if filename:
             plt.savefig(filename)
         plt.show()
@@ -97,7 +89,7 @@ class Diagram:
 
 def main():
     alpha = 1        
-    n_steps = 10000  
+    n_steps = 1000  
     diagram = Diagram()
     diagram.simulate(n_steps=n_steps, alpha=alpha)
     diagram.visualize(filename='diagram.png')
