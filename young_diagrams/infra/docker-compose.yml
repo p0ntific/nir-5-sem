@@ -1,0 +1,31 @@
+version: "3.3"
+
+services:
+    backend:
+        restart: always
+        image: backend:latest
+        volumes:
+            - ../backend/results_2d:/app/results_2d
+            - ../backend/results_3d:/app/results_3d
+        ports:
+            - "8000:8000"
+
+    # Отключаем frontend сервис, так как нас интересует только API и отдача статики через nginx
+    # frontend:
+    #     restart: always
+    #     image: frontend:latest
+    #     volumes:
+    #         - ../frontend/:/app/result_build/
+    #     depends_on:
+    #         - backend
+
+    nginx:
+        image: nginx:1.19.3
+        restart: always
+        ports:
+            - "80:80"
+        volumes:
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf
+            - ../frontend/dist:/usr/share/nginx/html/
+        depends_on:
+            - backend
